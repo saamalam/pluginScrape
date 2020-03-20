@@ -1,4 +1,3 @@
-
 <?php
 class Scraper {
   protected $categories = array();
@@ -27,14 +26,18 @@ class Scraper {
     $login = curl_init();
     curl_setopt($login, CURLOPT_COOKIEJAR, "cookie.txt");
     curl_setopt($login, CURLOPT_COOKIEFILE, "cookie.txt");
+    curl_setopt($login, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($login, CURLOPT_TIMEOUT, 60000);
-    curl_setopt($login, CURLOPT_RETURNTRANSFER, TRUE);
+    
     curl_setopt($login, CURLOPT_URL, $url);
+    curl_setopt($login, CURLOPT_HEADER , 1);
     curl_setopt($login, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
     curl_setopt($login, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($login, CURLOPT_FOLLOWLOCATION, TRUE);
+    
     curl_setopt($login, CURLOPT_POST, TRUE);
     curl_setopt($login, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($login, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.3) Gecko/20070309 Firefox/2.0.0.3");
     curl_exec($login);
 	
     //curl_close($login);
@@ -44,12 +47,14 @@ class Scraper {
             "https://plugintheme.net/product-category/wordpress-themes/blog/",
 			"https://plugintheme.net/product-category/wordpress-themes/business/"
                 );
-      foreach($subcats as $cat){
+      //foreach($subcats as $cat){
       //$this->getCategoryUrls($cat);
       //$this->getCategoryProducts($cat);
-	  echo $cat.'<br>';
-	  $this->getCategoryProducts($cat);
-      }
+	  //echo $cat.'<br>';
+    //$this->getCategoryProducts($cat);
+    //$this->getProductInfo('https://plugintheme.nethttps://plugintheme.net/shop/betheme-responsive-multi-purpose-wordpress-theme/');
+     // }
+      $this->getProductInfo('https://plugintheme.net/shop/woocommerce-quick-export-plugin/');
 
      
       
@@ -188,7 +193,7 @@ class Scraper {
      
       $prod_url = $this->domain . $product->getElementsByTagName('a')->item(0)->getAttribute('href');
       //echo $prod_url."<br>";
-     //$this->getProductInfo($prod_url, $cat_name);
+     $this->getProductInfo($prod_url, $cat_name);
     
       
     //$url_product = $this->domain . $product->getElementsByTagName('a')->item(0)->getAttribute('href');
@@ -210,7 +215,7 @@ class Scraper {
         
       }
       
-private function getProductInfo($prod_url, $cat_name_final){
+private function getProductInfo($prod_url){
         
         
     $p_url = curl_init();
@@ -244,40 +249,75 @@ private function getProductInfo($prod_url, $cat_name_final){
     $xpath_prod = new DOMXPath($dom_prod);
 
     // Get a list of categories from the section page
-    $product_info = $xpath_prod->query("//div[@class='wordpress1170']");
+    $product_info = $xpath_prod->query("//div[contains(@class, 'col') and contains(@class, 'large-9')]");
+    
+    
   
     
     foreach($product_info as $info){
       //product name
-      $p_name = utf8_decode("Draper ".$info->getElementsByTagName('h1')->item(0)->nodeValue);   
+      $p_name = $info->getElementsByTagName('h1')->item(0)->nodeValue; 
+      echo $p_name;  
+     
       
       
-        $price_str = $xpath_prod->query('//span[@id="showprice"]', $info)->item(0)->nodeValue;
+      //   $price_str = $xpath_prod->query('//span[@id="showprice"]', $info)->item(0)->nodeValue;
         
-        preg_match_all('/\d+\.\d{1,2}/', $price_str, $price_matches);
-       // echo "Price: " . $price_matches[0][0]."-----";
-        //echo " Nett Price: " . round(trim($price_matches[0][0])*1.40, 2) ."-----";
+      //   preg_match_all('/\d+\.\d{1,2}/', $price_str, $price_matches);
+      //  // echo "Price: " . $price_matches[0][0]."-----";
+      //   //echo " Nett Price: " . round(trim($price_matches[0][0])*1.40, 2) ."-----";
         
 
-        preg_match_all('!\d+!', $info->getElementsByTagName('h1')->item(1)->nodeValue, $model_matches);
-       // echo " Model: " . $model_matches[0][0]."-----";
+      //   preg_match_all('!\d+!', $info->getElementsByTagName('h1')->item(1)->nodeValue, $model_matches);
+      //  // echo " Model: " . $model_matches[0][0]."-----";
       
-        $status_str =  $xpath_prod->query('//span[@class="leftinstock"]', $info)->item(0)->nodeValue;
-        //echo "Status: <b>" . $status_str . "</b><br>";
-        if(trim($status_str) == "Discontinued"){
-         $status = 0;
-        }
-          else {
-         $status = 1;
+      //   $status_str =  $xpath_prod->query('//span[@class="leftinstock"]', $info)->item(0)->nodeValue;
+      //   //echo "Status: <b>" . $status_str . "</b><br>";
+      //   if(trim($status_str) == "Discontinued"){
+      //    $status = 0;
+      //   }
+      //     else {
+      //    $status = 1;
           
-        }
+      //   }
        
-        $category_link = $xpath_prod->query('//ol[@class="breadcrumb"]/li[last()]', $info)->item(0)->nodeValue;
-        //echo "Category: ". $category_link;
-        //description
+        // $category_link = $xpath_prod->query('//ol[@class="breadcrumb"]/li[last()]', $info)->item(0)->nodeValue;
+        // //echo "Category: ". $category_link;
+        // //description
+
+        //download file name
+        // $f_file = $xpath_prod->query('//form[@class="cart"]', $info);
+
+        //$f_file = $info->query("//a[contains(@class, 'red-link') and contains(@class, 'unlocked')]", $info);
+        $f_file = $xpath_prod->query('//a[@class="red-link"]', $info)->item(0)->getAttribute('href');
+
+        echo $f_file;
+          
+        var_dump($f_file);
+        exit();
+
+        $file = $f_file->getAttribute('href');
+        echo $file . '<br>';
+
+             
+
+        // foreach($f_file as $filename){
+        //   print_r($filename);
+
+        //   $file = $filename->getElementsByTagName('a')->item(0)->getAttribute('href');
+        //   echo $file . '<br>';
+          
+        // }
+        //$file = $f_file->getAttribute('href');
+        
+
+        
+        exit();
+
         $innerHTML = '';    
         
-        $f_desc = $xpath_prod->query('//div[@id="description"]', $info);
+        $f_desc = $xpath_prod->query('//div[@id="tab-description"]', $info);
+       
         
         if (!$f_desc==0) {
           foreach ($f_desc as $dom1) { 
@@ -285,43 +325,34 @@ private function getProductInfo($prod_url, $cat_name_final){
           $tmp_doc_f->appendChild($tmp_doc_f->importNode($dom1,true));
           $innerHTML .= $tmp_doc_f->saveHTML();          
           }
-          //echo $innerHTML;          
+          echo $innerHTML;          
         }
         
+        
 
-        $p_images = $xpath_prod->query("//img[contains(@class, 'cloudzoom-gallery') and contains(@class, 'cloudzoom-zoom-thumbnail')]", $info);
+        $p_images = $xpath_prod->query("//img[contains(@class, 'wp-post-image') and contains(@class, 'skip-lazy')]", $info);
         //echo count($p_images);
-        $additional_images = '';
-        $cnt = 0;
+        
         foreach($p_images as $p_image){
 
           $imageURL = $p_image->getAttribute('src');
          
-          $full_path = "catalog/b2b/latest/".basename($imageURL);
+          $full_path = "img/".basename($imageURL);
           //echo "<br>full path: " . $full_path;
-            if($cnt==0){
-              $img_path = 'http://b2b.drapertools.com/products/sq/800sq/'.basename($imageURL);
-              $main_image = $full_path;
+            
+              //$img_path = 'http://b2b.drapertools.com/products/sq/800sq/'.basename($imageURL);
+            
 
-            } else {
-              $img_path_check = 'http://b2b.drapertools.com/products/sq/in-use_800sq/'.basename($imageURL); 
-             
-              if (@getimagesize($img_path_check)) {
-                $img_path = $img_path_check;
-                } else {
-                  $img_path = 'http://b2b.drapertools.com/products/sq/800sq/'.basename($imageURL); 
-                }
-
-              $additional_images .= $full_path.';';
-            }
+           
           
           //echo "<br>img path: " . $img_path;
-          copy($img_path, $full_path);
+          copy($imageURL, $full_path);
 
-         $cnt++;
+         
         }
-        fputcsv($this->file_csv, array($p_name, round(trim($price_matches[0][0])*1.40, 2), trim($model_matches[0][0]), $status, trim($category_link), $main_image, $additional_images, $innerHTML, $cat_name_final));
+        //fputcsv($this->file_csv, array($p_name, round(trim($price_matches[0][0])*1.40, 2), trim($model_matches[0][0]), $status, trim($category_link), $main_image, $additional_images, $innerHTML, $cat_name_final));
         echo "...Done<br>";
+        exit();
 
     }   
       }
@@ -329,5 +360,5 @@ private function getProductInfo($prod_url, $cat_name_final){
     
     
 }
-$cats = new Scraper('https://plugintheme.net/my-account', 'username=kghost19@gmail.com&password=Admin@7866&woocommerce-login-nonce=1a6db50d39&_wp_http_referer=/my-account/');
+$cats = new Scraper('https://plugintheme.net/my-account', 'username=kghost19@gmail.com&password=Admin@7866');
 ?>
